@@ -43,10 +43,6 @@ func (r *router) DELETE(path string, handler http.HandlerFunc) {
 	r.rt = append(r.rt, route{path: path, method: "DELETE", handler: handler})
 }
 
-func (r *router) setResponseHeaderAsJSON(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-}
-
 func (r *router) LogRequest(req *http.Request) {
 	log.Printf("IP: %s, Method: %s, Path: %s", req.RemoteAddr, req.Method, req.URL.Path)
 }
