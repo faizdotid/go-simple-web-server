@@ -60,6 +60,17 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if len(route_path_explode) != len(request_path_explode) {
 			continue
 		}
+		match := true
+		for i, route_part := range route_path_explode {
+			if route_part != request_path_explode[i] && route_part != "*" {
+				match = false
+				break
+			}
+		}
+
+		if !match {
+			continue
+		}
 		// checking method first
 		if route.method != req.Method {
 			helper.JSON(
