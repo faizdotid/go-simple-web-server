@@ -56,9 +56,6 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// log request into console
 	r.LogRequest(req)
 
-	// set response header as json
-	r.setResponseHeaderAsJSON(w)
-
 	// logic for handling route
 	request_path_explode := strings.Split(req.URL.Path, "/")
 	for _, route := range r.rt {
