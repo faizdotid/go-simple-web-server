@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func LoadEnv() {
+func init() {
 	fileBytes, err := os.ReadFile("lib/.env")
 	if err != nil {
 		panic(err)
