@@ -1,3 +1,4 @@
+// Package: lib
 package lib
 
 import (
@@ -5,6 +6,9 @@ import (
 	"strings"
 )
 
+// Init: Load environment variables from .env file
+// and set them to the system environment variables
+// for the application to use.
 func init() {
 	fileBytes, err := os.ReadFile("lib/.env")
 	if err != nil {
@@ -17,7 +21,10 @@ func init() {
 	for _, line := range eachLine {
 		env := strings.Split(line, "=")
 		if len(env) == 2 {
-			os.Setenv(env[0], env[1])
+			os.Setenv(
+				strings.TrimSpace(env[0]),
+				strings.TrimSpace(env[1]),
+			)
 		}
 	}
 }
