@@ -9,6 +9,6 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 	helper.JSON(
 		w,
 		http.StatusOK,
-		map[string]interface{}{"message": "ping"},
+		map[string]interface{}{"message": "pong"},
 	)
 }
