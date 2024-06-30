@@ -3,6 +3,7 @@ package service
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -13,6 +14,8 @@ var jwtSecret = os.Getenv("JWT_SECRET")
 func EncrytData(data map[string]interface{}) (string, error) {
 	service := jwt.New(jwt.SigningMethodHS256)
 	claims := service.Claims.(jwt.MapClaims)
+	jwtExp, _ := strconv.Atoi(os.Getenv("JWT_EXP"))
+	claims["exp"] = jwtExp
 	for key, value := range data {
 		claims[key] = value
 	}
