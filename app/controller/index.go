@@ -10,7 +10,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		map[string]interface{}{
-			"message": "Hello from server",
+			"message": "Welcome to Go-Go",
 		},
 	)
 }
