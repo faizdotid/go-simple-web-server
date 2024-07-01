@@ -1,6 +1,7 @@
 package route
 
 import (
+	"context"
 	"fmt"
 	"go-go/app/helper"
 	"log"
@@ -8,13 +9,25 @@ import (
 	"strings"
 )
 
-// Router struct to manage route
+type Params map[string]interface{}
+
+type ParamsKey string
+
+// Get value from Params
+func (p Params) Get(key string) interface{} {
+	if val, ok := p[key]; ok {
+		return val
+	}
+	return ""
+}
+
+// router struct to manage route
 type router struct {
 	rt       []route
 	notfound map[string]interface{}
 }
 
-// Create new router
+// create new router
 func NewRouter() *router {
 	return &router{
 		rt:       []route{},
@@ -22,7 +35,7 @@ func NewRouter() *router {
 	}
 }
 
-// not found handler
+// handle not found route
 func (r *router) NotFound(data map[string]interface{}) {
 	r.notfound = data
 }
@@ -47,32 +60,58 @@ func (r *router) LogRequest(req *http.Request) {
 	log.Printf("IP: %s, Method: %s, Path: %s", req.RemoteAddr, req.Method, req.URL.Path)
 }
 
+// ServeHTTP to serve http request
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// log request into console
 	r.LogRequest(req)
 
-	// logic for handling route
+	// trim trailing slash
+	req.URL.Path = strings.TrimSuffix(req.URL.Path, "/")
 	request_path_explode := strings.Split(req.URL.Path, "/")
+
+	// loop through registered routes
 	for _, route := range r.rt {
+
+		// trim trailing slash
+		route.path = strings.TrimSuffix(route.path, "/")
 		route_path_explode := strings.Split(route.path, "/")
 
+		// get allowed method in same route
+		allowed_method_in_same_route := []string{}
+		for _, method := range r.rt {
+			if method.path == route.path {
+				allowed_method_in_same_route = append(allowed_method_in_same_route, method.method)
+			}
+		}
+
+		// check if route path and request path has same length
 		if len(route_path_explode) != len(request_path_explode) {
 			continue
 		}
+
+		// check if route path and request path has same value
 		match := true
-		for i, route_part := range route_path_explode {
-			if route_part != request_path_explode[i] && route_part != "*" {
+		params := Params{}
+		paramsKey := ParamsKey("params")
+		for i, route_path := range route_path_explode {
+			if strings.HasPrefix(route_path, ":") {
+				params[route_path[1:]] = request_path_explode[i]
+				continue
+			}
+			if route_path != request_path_explode[i] {
 				match = false
 				break
 			}
 		}
 
+		// if not match, continue to next route
 		if !match {
 			continue
 		}
-		// checking method first
-		if route.method != req.Method {
+
+		// checking method allowed in same route
+		if !helper.InArray(req.Method, allowed_method_in_same_route) {
 			helper.JSON(
 				w,
 				http.StatusMethodNotAllowed,
@@ -81,10 +120,21 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		route.handler(w, req)
+		// checking method first
+		if req.Method != route.method {
+			continue
+		}
+
+		// create new context with params
+		ctx := context.WithValue(req.Context(), ParamsKey(paramsKey), params)
+		route.handler(w, req.WithContext(ctx))
 		return
 	}
 
-	// route not found
-	helper.JSON(w, http.StatusNotFound, r.notfound)
+	// handle not found route
+	helper.JSON(
+		w,
+		http.StatusNotFound,
+		r.notfound,
+	)
 }
