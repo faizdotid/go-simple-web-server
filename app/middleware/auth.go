@@ -28,6 +28,10 @@ func Authorize(next http.HandlerFunc) http.HandlerFunc {
 func Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
+		if auth == "" {
+			next(w, r)
+			return
+		}
 		token := strings.Split(auth, " ")[1]
 		if token == "" {
 			next(w, r)
