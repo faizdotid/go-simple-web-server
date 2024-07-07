@@ -67,6 +67,11 @@ func main() {
 	}
 
 	// run the server
-	log.Println("Server running on :8080")
-	http.ListenAndServe(":8080", routes)
+	port := os.Getenv("PORT")
+	log.Printf("Server running on port %s", port)
+	
+	http.ListenAndServe(
+		fmt.Sprintf(":%s", port),
+		routes,
+	)
 }
