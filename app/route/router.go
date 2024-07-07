@@ -80,7 +80,7 @@ func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// get allowed method in same route
 		allowed_method_in_same_route := []string{}
 		for _, method := range r.rt {
-			if method.path == route.path {
+			if strings.Contains(method.path, route.path) {
 				allowed_method_in_same_route = append(allowed_method_in_same_route, method.method)
 			}
 		}
